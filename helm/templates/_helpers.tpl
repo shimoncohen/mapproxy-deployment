@@ -50,47 +50,28 @@ Returns the tag of the chart.
 Returns the environment from global if exists or from the chart's values, defaults to development
 */}}
 {{- define "mapproxy.environment" -}}
-{{- if .Values.global.environment }}
-    {{- .Values.global.environment -}}
-{{- else -}}
-    {{- .Values.environment | default "development" -}}
-{{- end -}}
+{{- .Values.environment | default "development" -}}
 {{- end -}}
 
 {{/*
 Returns the cloud provider name from global if exists or from the chart's values, defaults to minikube
 */}}
 {{- define "mapproxy.cloudProviderFlavor" -}}
-{{- if .Values.global.cloudProvider.flavor }}
-    {{- .Values.global.cloudProvider.flavor -}}
-{{- else if .Values.cloudProvider -}}
-    {{- .Values.cloudProvider.flavor | default "minikube" -}}
-{{- else -}}
-    {{ "minikube" }}
-{{- end -}}
+{{- .Values.cloudProvider.flavor | default "minikube" -}}
 {{- end -}}
 
 {{/*
 Returns the cloud provider docker registry url from global if exists or from the chart's values
 */}}
 {{- define "mapproxy.cloudProviderDockerRegistryUrl" -}}
-{{- if .Values.global.cloudProvider.dockerRegistryUrl }}
-    {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
-{{- else if .Values.cloudProvider.dockerRegistryUrl -}}
-    {{- printf "%s/" .Values.cloudProvider.dockerRegistryUrl -}}
-{{- else -}}
-{{- end -}}
+{{- printf "%s/" .Values.cloudProvider.dockerRegistryUrl -}}
 {{- end -}}
 
 {{/*
 Returns the cloud provider image pull secret name from global if exists or from the chart's values
 */}}
 {{- define "mapproxy.cloudProviderImagePullSecretName" -}}
-{{- if .Values.global.cloudProvider.imagePullSecretName }}
-    {{- .Values.global.cloudProvider.imagePullSecretName -}}
-{{- else if .Values.cloudProvider.imagePullSecretName -}}
-    {{- .Values.cloudProvider.imagePullSecretName -}}
-{{- end -}}
+{{- .Values.cloudProvider.imagePullSecretName -}}
 {{- end -}}
 
 {{- define "map-proxy.cors.allowedHeaders" -}}
@@ -102,4 +83,16 @@ Returns the cloud provider image pull secret name from global if exists or from 
 {{- $headerList = uniq $headerList -}}
 {{-  quote (join "," $headerList) -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+    Create a list of subPaths off the extraVolumeMounts in order to prevent conflict
+    with user's subPaths list
+*/}}
+{{- define "listOfSubPaths" -}}
+    {{- $subPathsList := list -}}
+    {{- range .Values.nginx.extraVolumeMounts -}}
+        {{- $subPathsList = append $subPathsList .subPath -}}
+    {{- end -}}
+    {{ toJson $subPathsList }}
 {{- end -}}

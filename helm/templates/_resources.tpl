@@ -13,18 +13,17 @@ Create mapproxy configmap name as used by the service name label.
 {{- end }}
 
 {{/*
+Create ingress name as used by the service name label.
+*/}}
+{{- define "nginx.fullname" -}}
+{{- printf "%s-%s-%s" .Release.Name .Chart.Name "nginx" | indent 1 }}
+{{- end }}
+
+{{/*
 Create mapproxy nginx configmap name as used by the service name label.
 */}}
 {{- define "nginx-configmap.fullname" -}}
 {{- printf "%s-%s-%s" .Release.Name .Chart.Name "nginx-configmap" | indent 1 }}
-{{- end }}
-
-
-{{/*
-Create init container configmap name as used by the service name label.
-*/}}
-{{- define "init-configmap.fullname" -}}
-{{- printf "%s-%s-%s" .Release.Name .Chart.Name "init-configmap" | indent 1 }}
 {{- end }}
 
 {{/*
@@ -35,17 +34,10 @@ Create mapproxinator container configmap name as used by the service name label.
 {{- end }}
 
 {{/*
-Create wms deployment name as used by the service name label.
+Create deployment name as used by the service name label.
 */}}
-{{- define "wms-deployment.fullname" -}}
-{{- printf "%s-%s-%s" .Release.Name .Chart.Name "wms-deployment" | indent 1 }}
-{{- end }}
-
-{{/*
-Create wmts deployment name as used by the service name label.
-*/}}
-{{- define "wmts-deployment.fullname" -}}
-{{- printf "%s-%s-%s" .Release.Name .Chart.Name "wmts-deployment" | indent 1 }}
+{{- define "deployment.fullname" -}}
+{{- printf "%s-%s-%s" .Release.Name .Chart.Name "deployment" | indent 1 }}
 {{- end }}
 
 {{/*

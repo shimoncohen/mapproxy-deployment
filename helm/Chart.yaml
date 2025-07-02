@@ -2,9 +2,5 @@ apiVersion: v2
 name: mapproxy
 description: A Helm chart for mapproxy service
 type: application
-version: 1.8.6
-appVersion: 1.8.6
-dependencies:
-  - name: nginx
-    version: 1.3.0
-    repository: oci://acrarolibotnonprod.azurecr.io/helm
+version: 1.0.0
+appVersion: 1.0.0
