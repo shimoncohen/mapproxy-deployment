@@ -2,6 +2,13 @@
 
 In this repo you will find everything you need in order to deploy [Mapproxy](https://mapproxy.github.io/mapproxy/latest/index.html) on `Openshift`.
 
+## Configuring Mapproxy
+
+Edit the `mapproxy.yaml` file under `helm/config/mapproxy.yaml` in order to serve your geographical data (see [configuring mapproxy](https://mapproxy.github.io/mapproxy/latest/configuration.html#mapproxy-yaml)).
+
+> [!Note]
+> In the given `mapproxy.yaml` file there are two grids defined for your use that are compliant to our used grids in our production environments.
+
 ## Getting the image
 
 First of all, we need to create our `image`:
