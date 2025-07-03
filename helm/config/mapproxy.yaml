@@ -39,7 +39,19 @@ sources:
       layers: OSM-WMS
 
 grids:
-    webmercator:
-        base: GLOBAL_WEBMERCATOR
+  webmercator:
+    base: GLOBAL_WEBMERCATOR
+  WorldCRS84_2x1_LL:
+    srs: EPSG:4326
+    bbox: [ -180,-90,180,90 ]
+    origin: ll
+    min_res: 0.703125
+    num_levels: 21
+  WorldCRS84_2x1_UL:
+    srs: EPSG:4326
+    bbox: [ -180,-90,180,90 ]
+    origin: ul
+    min_res: 0.703125
+    num_levels: 21
 
 globals:
