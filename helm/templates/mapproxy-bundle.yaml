@@ -66,8 +66,6 @@
           configMap:
             name: {{ $configmapName }}
             items:
-            # - key: "UWSGI_INI"
-            #   path: "uwsgi.ini"
             - key: "LOG_INI"
               path: "log.ini"
         {{- if $fs.internalPvc.enabled }}

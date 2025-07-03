@@ -58,12 +58,6 @@
           - mountPath: "/mapproxy/config/mapproxy.yaml"
             name: mapproxy-config
             subPath: mapproxy.yaml
-          # - mountPath: "/mapproxy/uwsgi.ini"
-          #   name: uwsgi-config
-          #   subPath: uwsgi.ini
-          # - mountPath: "/settings/uwsgi.ini"
-          #   name: uwsgi-config
-          #   subPath: uwsgi.ini
           - mountPath: "/mapproxy/log.ini"
             name: uwsgi-config
             subPath: log.ini
