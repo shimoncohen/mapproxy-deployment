@@ -64,14 +64,28 @@ Returns the cloud provider name from global if exists or from the chart's values
 Returns the cloud provider docker registry url from global if exists or from the chart's values
 */}}
 {{- define "mapproxy.cloudProviderDockerRegistryUrl" -}}
-{{- printf "%s/" .Values.cloudProvider.dockerRegistryUrl -}}
+{{- default .Values.global.cloudProvider.dockerRegistryUrl .Values.mapproxy.image.dockerRegistryUrl }}
 {{- end -}}
 
 {{/*
 Returns the cloud provider image pull secret name from global if exists or from the chart's values
 */}}
 {{- define "mapproxy.cloudProviderImagePullSecretName" -}}
-{{- .Values.cloudProvider.imagePullSecretName -}}
+{{- default .Values.global.cloudProvider.imagePullSecretName .Values.mapproxy.image.imagePullSecretName }}
+{{- end -}}
+
+{{/*
+Returns the cloud provider docker registry url from global if exists or from the chart's values
+*/}}
+{{- define "mapproxy.nginx.cloudProviderDockerRegistryUrl" -}}
+{{- default .Values.global.cloudProvider.dockerRegistryUrl .Values.nginx.image.dockerRegistryUrl }}
+{{- end -}}
+
+{{/*
+Returns the cloud provider image pull secret name from global if exists or from the chart's values
+*/}}
+{{- define "mapproxy.nginx.cloudProviderImagePullSecretName" -}}
+{{- default .Values.global.cloudProvider.imagePullSecretName .Values.nginx.image.imagePullSecretName }}
 {{- end -}}
 
 {{- define "map-proxy.cors.allowedHeaders" -}}

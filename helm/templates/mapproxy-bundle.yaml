@@ -4,6 +4,9 @@
   {{- $configmapName := include "configmap.fullname" . -}}
   {{- $cloudProviderDockerRegistryUrl := include "mapproxy.cloudProviderDockerRegistryUrl" . -}}
   {{- $cloudProviderImagePullSecretName := include "mapproxy.cloudProviderImagePullSecretName" . -}}
+  {{- if not (empty $cloudProviderDockerRegistryUrl)}}
+  {{- $cloudProviderDockerRegistryUrl = printf "%s/" $cloudProviderDockerRegistryUrl -}}
+  {{- end}}
   {{- $sslSecretName := ternary .Values.authentication.ssl.externalSecretName (printf "%s%s" .Release.Name "-open-ssl") .Values.authentication.ssl.useExternal }}
   {{- $s3SecretName := ternary $s3.secretName (printf "%s%s" .Release.Name  "-s3-secret") (ne $s3.secretName "") }}
   replicas: {{ .replicaCount }}

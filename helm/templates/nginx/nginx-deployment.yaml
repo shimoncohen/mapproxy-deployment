@@ -1,8 +1,11 @@
 {{- if .Values.nginx.enabled -}}
 {{- $fullName := include "mapproxy.fullname" . -}}
 {{- $chartName := include "mapproxy.name" . -}}
-{{- $cloudProviderDockerRegistryUrl := include "mapproxy.cloudProviderDockerRegistryUrl" . -}}
-{{- $cloudProviderImagePullSecretName := include "mapproxy.cloudProviderImagePullSecretName" . -}}
+{{- $cloudProviderDockerRegistryUrl := include "mapproxy.nginx.cloudProviderDockerRegistryUrl" . -}}
+{{- $cloudProviderImagePullSecretName := include "mapproxy.nginx.cloudProviderImagePullSecretName" . -}}
+{{- if not (empty $cloudProviderDockerRegistryUrl)}}
+{{- $cloudProviderDockerRegistryUrl = printf "%s/" $cloudProviderDockerRegistryUrl -}}
+{{- end}}
 {{- $nginxConfigmapName := include "nginx-configmap.fullname" . }}
 {{- $listOfSubPaths := include "listOfSubPaths" . | fromJsonArray -}}
 apiVersion: apps/v1
