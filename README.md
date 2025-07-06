@@ -33,10 +33,12 @@ To run `Mapproxy` with docker read more at [kartoza/docker-mapproxy](https://git
 
 Replace all of the following in the `values.yaml` file with your wanted values:
 
-1. `<YOUR_REPOSITORY>` - repositories url
-2. `<YOUR_REGISTRY>` - registry name
-3. `<YOUR_TAG>` - image tag
-4. `<YOUR_PULL_SECRET>` - secret name containing the repositories authentication information
+1. `<YOUR_REPOSITORY>` - repositories url (used only if YOUR_MAPPROXY_REPOSITORY isn't defined)
+2. `<YOUR_REGISTRY>` - registry name (used only if YOUR_MAPPROXY_REGISTRY isn't defined)
+3. `<YOUR_MAPPROXY_REPOSITORY>` - mapproxy repositories url
+4. `<YOUR_MAPPROXY_REGISTRY>` - mapproxy registry name
+5. `<YOUR_TAG>` - mapproxy image tag
+6. `<YOUR_PULL_SECRET>` - secret name containing the repositories authentication information
 
 Go over all of the values and change them according to what suites your needs.
 
