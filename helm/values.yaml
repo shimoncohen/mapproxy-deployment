@@ -151,7 +151,7 @@ nginx:
     - name: nginx-config
       configMap:
         name: "{{ .Release.Name }}-{{ .Chart.Name }}-nginx-configmap"
-    - name: cache #TODO: Find solution to mount cache volume with condition
+    - name: cache
       emptyDir:
         sizeLimit: "{{ .Values.nginx.volume.storage }}"
         medium: "Memory"

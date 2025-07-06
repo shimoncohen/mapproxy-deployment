@@ -21,6 +21,5 @@ data:
   CORS_ALLOWED_ORIGIN: {{ .Values.mapproxy.env.cors.allowedOrigin | quote }}
   START_SCRIPT: {{ tpl (.Files.Get "config/start.sh") . | quote }}
   MAPPROXY_YAML: {{ tpl (.Files.Get "config/mapproxy.yaml") . | quote }}
-  # UWSGI_INI: {{ tpl (.Files.Get "config/mapProxyUwsgi.ini") . | quote }}
   LOG_INI: {{ tpl (.Files.Get "config/log.ini") . | quote }}
 {{- end }}
