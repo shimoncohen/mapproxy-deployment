@@ -1,38 +1,34 @@
 {{- define "mapproxy-chart.mapproxy-bundle" }}
-  {{- $db := (include "common.db.merged" .) | fromYaml }}
   {{- $fs := (include "common.fs.merged" .) | fromYaml }}
   {{- $s3 := (include "common.s3.merged" .) | fromYaml }}
-  {{- $initConfigmapName := include "init-configmap.fullname" . -}}
+  {{- $configmapName := include "configmap.fullname" . -}}
   {{- $cloudProviderDockerRegistryUrl := include "mapproxy.cloudProviderDockerRegistryUrl" . -}}
   {{- $cloudProviderImagePullSecretName := include "mapproxy.cloudProviderImagePullSecretName" . -}}
+  {{- if not (empty $cloudProviderDockerRegistryUrl)}}
+  {{- $cloudProviderDockerRegistryUrl = printf "%s/" $cloudProviderDockerRegistryUrl -}}
+  {{- end}}
   {{- $sslSecretName := ternary .Values.authentication.ssl.externalSecretName (printf "%s%s" .Release.Name "-open-ssl") .Values.authentication.ssl.useExternal }}
-  {{- $postgresSecretName := ternary $db.secrets.externalSecretName (printf "%s%s" .Release.Name "-postgres-secret") $db.secrets.useExternal }}
   {{- $s3SecretName := ternary $s3.secretName (printf "%s%s" .Release.Name  "-s3-secret") (ne $s3.secretName "") }}
-  {{- $metrics := (include "common.metrics.merged" .) | fromYaml }}
   replicas: {{ .replicaCount }}
   selector:
     matchLabels:
-      app: {{ .chartName }}-{{ .type }}
-      release: {{ .releaseName }}-{{ .type }}
-      run: {{ .releaseName }}-{{ .chartName }}-{{ .type }}
-      app.kubernetes.io/name: {{ include "mapproxy.name" . }}-{{ .type }}
-      app.kubernetes.io/instance: {{ .releaseName }}-{{ .type }}
+      app: {{ .chartName }}
+      release: {{ .releaseName }}
+      run: {{ .releaseName }}-{{ .chartName }}
+      app.kubernetes.io/name: {{ include "mapproxy.name" . }}
+      app.kubernetes.io/instance: {{ .releaseName }}
   template:
     metadata:
       labels:
-        app: {{ .chartName }}-{{ .type }}
-        release: {{ .releaseName }}-{{ .type }}
-        run: {{ .releaseName }}-{{ .chartName }}-{{ .type }}
-        app.kubernetes.io/name: {{ include "mapproxy.name" . }}-{{ .type }}
-        app.kubernetes.io/instance: {{ .releaseName }}-{{ .type }}
+        app: {{ .chartName }}
+        release: {{ .releaseName }}
+        run: {{ .releaseName }}-{{ .chartName }}
+        app.kubernetes.io/name: {{ include "mapproxy.name" . }}
+        app.kubernetes.io/instance: {{ .releaseName }}
       annotations:
         {{- if .Values.resetOnConfigChange }}
         checksum/configmap: {{
           include (print $.Template.BasePath "/mapproxy/mapproxy-configmap.yaml") . | sha256sum }}
-        {{- end }}
-        {{- if $metrics.enabled }}
-        prometheus.io/port: {{ $metrics.prometheus.port | quote }}
-        prometheus.io/scrape: {{ $metrics.prometheus.scrape | quote }}
         {{- end }}
         {{- if .Values.podAnnotations }}
         {{- toYaml .Values.podAnnotations | nindent 8 }}
@@ -42,43 +38,11 @@
       imagePullSecrets:
         - name: {{ $cloudProviderImagePullSecretName | quote }}
     {{- end }}
-      initContainers:
-        ######################################################### Init Container Deployment #########################################################
-        {{- template "mapproxy-chart.init-container" (merge (dict "releaseName" .releaseName "chartName" .chartName "cloudProviderDockerRegistryUrl" $cloudProviderDockerRegistryUrl "s3SecretName" $s3SecretName "postgresSecretName" $postgresSecretName) .)}}
       containers:
         ######################################################### MapProxy Deployment #########################################################
         {{- template "mapproxy-chart.mapproxy-container" (merge (dict "releaseName" .releaseName "chartName" .chartName "cloudProviderDockerRegistryUrl" $cloudProviderDockerRegistryUrl "s3SecretName" $s3SecretName "resources" .resources) .) }}
-        ######################################################### Mapproxinator Deployment #########################################################
-        {{- template "mapproxy-chart.mapproxinator-container" (merge (dict "releaseName" .releaseName "chartName" .chartName "cloudProviderDockerRegistryUrl" $cloudProviderDockerRegistryUrl "s3SecretName" $s3SecretName "postgresSecretName" $postgresSecretName) .) }}
-         ######################################################### uwsgi Deployment #########################################################
-        {{- if $metrics.enabled }}
-        {{- template "mapproxy-chart.uwsgi-exporter-container" (merge (dict "releaseName" .releaseName "chartName" .chartName "cloudProviderDockerRegistryUrl" $cloudProviderDockerRegistryUrl "resources" .Values.uwsgiExporter.resources) .) }}
-        {{- end }}
-      volumes:
-        - name: mapproxy-config
-          emptyDir: {}
-        - name: shared-config
-          emptyDir: {}
-        {{- if $db.sslEnabled }}
-        - name: ca-file
-          secret:
-            secretName: {{ $postgresSecretName }}
-            items:
-              - key: caFile
-                path: ca.pem
-        - name: key-file
-          secret:
-            secretName: {{ $postgresSecretName }}
-            items:
-              - key: keyFile
-                path: key.pem
-        - name: cert-file
-          secret:
-            secretName: {{ $postgresSecretName }}
-            items:
-              - key: certFile
-                path: cert.pem
-        {{- end }}    
+        ######################################################### uwsgi Deployment #########################################################
+      volumes:  
         {{- if .Values.global.ca.secretName }}
         - name: root-ca
           secret:
@@ -89,12 +53,22 @@
           secret:
             secretName: {{ $sslSecretName }}
         {{- end }}
+        - name: start-script
+          configMap:
+            name: {{ $configmapName }}
+            items:
+            - key: "START_SCRIPT"
+              path: "start.sh"
+        - name: mapproxy-config
+          configMap:
+            name: {{ $configmapName }}
+            items:
+            - key: "MAPPROXY_YAML"
+              path: "mapproxy.yaml"
         - name: uwsgi-config
           configMap:
-            name: {{ $initConfigmapName }}
+            name: {{ $configmapName }}
             items:
-            - key: "UWSGI_INI"
-              path: "uwsgi.ini"
             - key: "LOG_INI"
               path: "log.ini"
         {{- if $fs.internalPvc.enabled }}

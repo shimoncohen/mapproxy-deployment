@@ -1,14 +1,15 @@
-{{- define "mapproxy-chart.mapproxy-service" }}
+{{- if .Values.mapproxy.enabled -}}
 {{- $releaseName := .Release.Name -}}
 {{- $chartName := include "mapproxy.name" . -}}
 {{- $cloudProviderFlavor := include "mapproxy.cloudProviderFlavor" . -}}
 {{- $serviceName := include "service.fullname" . -}}
+{{- $nodePort := .Values.mapproxy.nodePort -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $serviceName }}-{{ .type }}
+  name: {{ $serviceName }}
   labels:
-    app: {{ $chartName }}-{{ .type }}
+    app: {{ $chartName }}
     component: {{ $chartName }}
     environment: {{ include "mapproxy.environment" . }}
     release: {{ $releaseName }}
@@ -23,12 +24,12 @@ spec:
       protocol: TCP
       name: http
       {{- if eq $cloudProviderFlavor "minikube" }}
-      nodePort: {{ .nodePort }}
+      nodePort: {{ $nodePort }}
       {{- end }}
   selector:
-    app: {{ $chartName }}-{{ .type }}
-    release: {{ $releaseName }}-{{ .type }}
-    run: {{ $releaseName }}-{{ $chartName }}-{{ .type }}
-    app.kubernetes.io/name: {{ include "mapproxy.name" . }}-{{ .type }}
-    app.kubernetes.io/instance: {{ $releaseName }}-{{ .type }}
+    app: {{ $chartName }}
+    release: {{ $releaseName }}
+    run: {{ $releaseName }}-{{ $chartName }}
+    app.kubernetes.io/name: {{ include "mapproxy.name" . }}
+    app.kubernetes.io/instance: {{ $releaseName }}
 {{- end }}

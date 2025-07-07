@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 FROM python:3.7.10
-MAINTAINER Tim Sutton<tim@kartoza.com>
 
 #-------------Application Specific Stuff ----------------------------------------------------
 RUN apt-get -y update && \
@@ -27,13 +26,7 @@ ENV \
     PROCESSES=6 \
     THREADS=10 \
     # Run using uwsgi. This is the default behaviour. Alternatively run using the dev server. Not for production settings
-    PRODUCTION=true \
-    TELEMETRY_TRACING_ENABLED='true' \
-    # Set telemetry endpoint
-    TELEMETRY_TRACING_ENDPOINT='localhost:4317' \
-    OTEL_RESOURCE_ATTRIBUTES='service.name=mapcolonies,application=mapproxy' \
-    OTEL_SERVICE_NAME='mapproxy' \
-    TELEMETRY_TRACING_SAMPLING_RATIO_DENOMINATOR=1000
+    PRODUCTION=true
 
 ADD uwsgi.ini /settings/uwsgi.default.ini
 ADD start.sh /start.sh
@@ -60,4 +53,4 @@ USER user
 VOLUME [ "/mapproxy"]
 # USER mapproxy
 ENTRYPOINT [ "/start.sh" ]
-CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0:8080", "mapproxy.yaml"]
+CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0", "mapproxy.yaml"]

@@ -4,7 +4,7 @@
 {{- $fs := (include "common.fs.merged" .) | fromYaml }}
         - name: mapproxy
           image: {{ .cloudProviderDockerRegistryUrl }}{{ .Values.mapproxy.image.repository }}:{{ .Values.mapproxy.image.tag }}
-          imagePullPolicy: {{ .Values.imagePullPolicy }} 
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           env:
             - name: REDIS_TLS
               value: {{ .Values.mapproxy.redis.tls | quote }}
@@ -42,11 +42,6 @@
             {{- toYaml .resources.value | nindent 12 }}
           {{- end }}
           volumeMounts:
-          - name: shared-config
-            mountPath: /uwsgi_config
-          - mountPath: /mapproxy/mapproxy.yaml
-            name: mapproxy-config
-            subPath: mapproxy.yaml
           {{- if .Values.global.ca.secretName }}
           - mountPath: {{ printf "%s/%s" .Values.global.ca.path .Values.global.ca.key | quote }}
             name: root-ca
@@ -57,9 +52,12 @@
             mountPath: "/etc/ssl/openssl.cnf"
             subPath: "openssl.cnf"
           {{- end }}
-          - mountPath: "/mapproxy/uwsgi.ini"
-            name: uwsgi-config
-            subPath: uwsgi.ini
+          - mountPath: "/mapproxy/start.sh"
+            name: start-script
+            subPath: start.sh
+          - mountPath: "/mapproxy/config/mapproxy.yaml"
+            name: mapproxy-config
+            subPath: mapproxy.yaml
           - mountPath: "/mapproxy/log.ini"
             name: uwsgi-config
             subPath: log.ini

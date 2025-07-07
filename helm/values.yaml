@@ -1,22 +1,5 @@
 global:
-  cloudProvider:
-    dockerRegistryUrl: my-registry-url.io
-    imagePullSecretName: "my-registry-secret"
-    flavor: openshift
-  tracing:
-    enabled: false
-    url: ""
-    samplingRatioDenominator: 1000
-  metrics:
-    enabled: false
-    url: ""
-    prometheus:
-      scrape: false
-      port: 9117
   environment: ""
-  authentication:
-    jwtPublicKeySecretName: map-colonies-jwks
-  opalaEnabled: false
   storage:
     tilesStorageProvider: ""
     mapproxyConfigProvider: ""
@@ -30,21 +13,15 @@ global:
       tilesBucket: ""
       sslEnabled: false
       secretName: ""
-  db:
-    host: ""
-    name: ""
-    port: 5432
-    sslEnabled: false
-    schema: ""
-    rejectUnauthorized: false
-    secrets:
-      useExternal: false
-      externalSecretName: ""
   ca:
     secretName: "root-ca"
     path: "/usr/local/share/ca-certificates"
     key: "ca.crt"
   gracefulReloadMaxSeconds: 300
+  cloudProvider:
+    dockerRegistryUrl: <YOUR_REGISTRY>
+    imagePullSecretName: <YOUR_PULL_SECRET>
+    flavor: openshift
 
 authentication:
   ssl:
@@ -66,28 +43,6 @@ storage:
     sslEnabled: false
     secretName: ""
 
-db:
-  host: ""
-  name: ""
-  port: 5432
-  sslEnabled: false
-  schema: ""
-  rejectUnauthorized: false
-  secrets:
-    useExternal: false
-    externalSecretName: ""
-
-tracing:
-  enabled: false
-  url: ""
-  # samplingRatioDenominator: 1000
-metrics:
-  enabled: false
-  url: ""
-  prometheus:
-    scrape: false
-    port: 9117
-
 # add pod annotations
 # example:
 # podAnnotations:
@@ -99,11 +54,9 @@ environment: development
 initialDelaySeconds: 60
 splunkIndex: ""
 resetOnConfigChange: true
-imagePullPolicy: Always
+imagePullPolicy: IfNotPresent
 
 cloudProvider:
-  dockerRegistryUrl: my-registry-url.io
-  imagePullSecretName: "my-registry-secret"
   flavor: openshift
 
 mapproxy:
@@ -113,35 +66,22 @@ mapproxy:
     timeoutSeconds: 0.1 # Set a operation timeout nonnegative, floating point number expressing *seconds*.
   redis:
     tls: false
-  wms:
-    enabled: false
-    replicaCount: 1
-    resources:
-      enabled: true
-      value:
-        limits:
-          cpu: 200m
-          memory: 128Mi
-        requests:
-          cpu: 200m
-          memory: 128Mi
-    nodePort: 30001
-  wmts:
+  replicaCount: 1
+  resources:
     enabled: true
-    replicaCount: 1
-    resources:
-      enabled: true
-      value:
-        limits:
-          cpu: 100m
-          memory: 128Mi
-        requests:
-          cpu: 100m
-          memory: 128Mi
-    nodePort: 30002
+    value:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  nodePort: 30002
   image:
-    repository: docker-mapproxy
-    tag: "latest"
+    dockerRegistryUrl: <YOUR_MAPPROXY_REGISTRY>
+    imagePullSecretName: <YOUR_MAPPROXY_PULL_SECRET>
+    repository: <YOUR_REPOSITORY>
+    tag: <YOUR_TAG>
   db:
     nameOverride:
     schema: MapproxyConfig
@@ -162,7 +102,7 @@ mapproxy:
     cors:
       enabled: true
       allowedOrigin: "*"
-      allowedHeaders: "x-api-key"
+      allowedHeaders: "*"
     ssl: # external paths
       CA_DIR: /opt/certs/ca/
       KEY_DIR: /opt/certs/key/
@@ -177,36 +117,15 @@ mapproxy:
     responseCompressionEnabled: true
     requestPayloadLimit: 1mb
 
-initContainer:
-  image:
-    repository: mapproxinator
-    tag: "latest"
-  env:
-    logLevel: warn
-    ssl:
-      CA_DIR: /opt/certs/ca/
-      KEY_DIR: /opt/certs/key/
-      CERT_DIR: /opt/certs/cert/
-      CA_FILE_LOCATION: /opt/certs/ca/ca.pem
-      KEY_FILE_LOCATION: /opt/certs/key/key.pem
-      CERT_FILE_LOCATION: /opt/certs/cert/cert.pem
-  resources:
-    enabled: true
-    value:
-      limits:
-        cpu: 100m
-        memory: 128Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-
 nginx:
   enabled: true
   fullnameOverride: ""
   replicaCount: 1
   image:
-    repository: nginx
-    tag: "latest"
+    dockerRegistryUrl: nginxinc
+    imagePullSecretName: ""
+    repository: nginx-unprivileged
+    tag: 1.28.0-alpine3.21-otel
   volume:
     storage: 1000Mi
     accessModes: ReadWriteOnce
@@ -222,29 +141,19 @@ nginx:
     useTempPath: "off"
 
   port: 8080
+  statusPort: 8081
   internalServicePort: 80
   nginxTargetPort: 8080
   targetPort: 8080
   nodePort: 30003
 
-  authorization:
-    enabled: true
-    url: http://opa-int-opa-service.infra-services/v1/data/http/authz/decision
-    token:
-      queryName: token
-    wms:
-      enabled: true
-      domain: "rasterWms"
-    wmts:
-      domain: "raster"
-
   extraVolumes:
     - name: nginx-config
       configMap:
-        name: "{{ .Release.Name }}-nginx-configmap"
-    - name: cache #TODO: Find solution to mount cache volume with condition
+        name: "{{ .Release.Name }}-{{ .Chart.Name }}-nginx-configmap"
+    - name: cache
       emptyDir:
-        sizeLimit: "{{ .Values.volume.storage }}"
+        sizeLimit: "{{ .Values.nginx.volume.storage }}"
         medium: "Memory"
 
   extraVolumeMounts:
@@ -270,13 +179,15 @@ nginx:
     enabled: true
     routesMapping:
       - host:
-        path: /api/raster/v1
+        path: /api
     timeout:
       enabled: false # defaults to 30s by openshift
       duration: 60s # supported units (us, ms, s, m, h, d)
     rewriteTarget: ""
     tls:
       enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
       useCerts: false
       certificate: ""
       key: ""
@@ -285,7 +196,7 @@ nginx:
   ingress:
     enabled: false
     type: "nginx-org" # supported values: 'nginx-org' | 'nginx-kubernetes'
-    path: /api/raster/v1
+    path: /api
     host: "localhost"
     tls:
       enabled: true
@@ -297,40 +208,6 @@ nginx:
       limits:
         cpu: 100m
         memory: 128Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-
-mapproxinator:
-  enabled: true
-  replicaCount: 1
-  image:
-    repository: mapproxinator
-    tag: "latest"
-  port: 80
-  targetPort: 8081
-  nodePort: 30002
-  env:
-    logLevel: warn
-    poll:
-      timeout:
-        frequencyMS: 5000
-    logPrettyPrintEnabled: false
-    responseCompressionEnabled: true
-    requestPayloadLimit: 1mb
-    ssl: # external paths
-      CA_DIR: /opt/certs/ca/
-      KEY_DIR: /opt/certs/key/
-      CERT_DIR: /opt/certs/cert/
-      CA_FILE_LOCATION: /opt/certs/ca/ca.pem
-      KEY_FILE_LOCATION: /opt/certs/key/key.pem
-      CERT_FILE_LOCATION: /opt/certs/cert/cert.pem
-  resources:
-    enabled: false
-    value:
-      limits:
-        cpu: 500m
-        memory: 500Mi
       requests:
         cpu: 100m
         memory: 128Mi
