@@ -88,7 +88,7 @@ Returns the cloud provider image pull secret name from global if exists or from 
 {{- default .Values.global.cloudProvider.imagePullSecretName .Values.nginx.image.imagePullSecretName }}
 {{- end -}}
 
-{{- define "map-proxy.cors.allowedHeaders" -}}
+{{- define "mapproxy.cors.allowedHeaders" -}}
 {{- $headerList := list -}}
 {{- if ne .Values.mapproxy.env.cors.allowedHeaders "" -}}
 {{- range $k, $v := (split "," .Values.mapproxy.env.cors.allowedHeaders) -}}

@@ -9,7 +9,7 @@ metadata:
   name: {{ $configmapName }}
   labels:
     app: {{ $releaseName }}-{{ $chartName }}
-    component: map-proxy-configmap
+    component: mapproxy-configmap
     environment: {{ .Values.environment }}
     release: {{ $releaseName }}
 data:
@@ -17,7 +17,7 @@ data:
   S3_BUCKET:  {{ $s3.tilesBucket | quote }}
   AWS_HTTPS: {{ $s3.sslEnabled | quote }}
   CORS_ENABLED: {{ .Values.mapproxy.env.cors.enabled | quote }}
-  CORS_ALLOWED_HEADERS: {{ template "map-proxy.cors.allowedHeaders" . }}
+  CORS_ALLOWED_HEADERS: {{ template "mapproxy.cors.allowedHeaders" . }}
   CORS_ALLOWED_ORIGIN: {{ .Values.mapproxy.env.cors.allowedOrigin | quote }}
   START_SCRIPT: {{ tpl (.Files.Get "config/start.sh") . | quote }}
   MAPPROXY_YAML: {{ tpl (.Files.Get "config/mapproxy.yaml") . | quote }}
